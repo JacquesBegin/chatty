@@ -5,16 +5,18 @@ import SystemMessage from "./SystemMessage.jsx";
 
 class MessageList extends Component {
 
+  constructor(props) {
+    super(props)
+
+  }
+
 
   render() {
 
     var outputMessages;
     var outputNotifications = [];
-    console.log("in message list");
-    console.log(this.props.messages);
     if (this.props.messages.length != 0) {
       outputMessages = this.props.messages.map( message => {
-        console.log("in switch: ", message.type);
         switch(message.type) {
           case "incomingMessage":
             return <Message key={message.id} {...message}/>
@@ -31,11 +33,10 @@ class MessageList extends Component {
     }
     return (
         <main className="messages">
-          {console.log("Rendering <Message/>")}
-          {console.log("output messages: ", outputMessages)}
           {outputMessages}
         </main>
     );
+          // {console.log("Rendering <Message/>")}
   }
 }
 

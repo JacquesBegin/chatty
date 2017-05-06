@@ -5,7 +5,6 @@ class ChatBar extends Component {
 
   constructor(props) {
     super(props)
-    this.state = { newMessage: []}
 
     // this.handleSubmit = this.props.handleSubmit.bind(this);
   }
@@ -21,18 +20,19 @@ class ChatBar extends Component {
   }
 
   handleUsernameKeyPress = (e) => {
-    if (e.key === "Enter") {
+    if (e.target.value !== this.props.username) {
+      if (e.key === "Enter") {
       e.preventDefault();
       this.props.changeUsername(e.target.value);
+      }
     }
   }
 
   handleUsernameOnblur = (e) => {
-    this.props.changeUsername(e.target.value);
+    if (e.target.value !== this.props.username) {
+      this.props.changeUsername(e.target.value);
+    }
   }
-
-
-
 
   render() {
     return (

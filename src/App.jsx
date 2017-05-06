@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import ChatBar from "./ChatBar.jsx";
 import MessageList from "./MessageList.jsx";
+import Nav from "./Nav.jsx";
 
 
 const appData = {
-    currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
+    currentUser: {name: "Jacques"}, // optional. if currentUser is not defined, it means the user is Anonymous
   }
 
 class App extends Component {
@@ -13,22 +14,20 @@ class App extends Component {
     super(props);
     this.state = {
       currentUser: appData.currentUser,
-      messages: []
+      messages: [],
+      connectionsCount: 0
     }
     this.socket = new WebSocket('ws://localhost:3001/');
   }
 
   handleAddNewMessage = (message) => {
-    console.log("current user: ", this.state.currentUser);
     message.username = this.state.currentUser.name;
     message.type = "postMessage";
-    console.log("messages: ", message);
     const newMessages = this.state.messages.concat(message);
     this.socket.send(JSON.stringify(message));
   }
 
   handleChangeUsername = (username) => {
-    console.log(this.state.currentUser);
     let message = {};
     message.content = `${this.state.currentUser.name} changed their name to ${username}`;
     this.state.currentUser.name = username;
@@ -45,29 +44,50 @@ class App extends Component {
 
       this.socket.onmessage = (rawMessage) => {
         let newMessage = JSON.parse(rawMessage.data);
-        console.log("newMessage: ", newMessage);
-        const messages = this.state.messages.concat(newMessage)
-        console.log("ALLMESSAGES: ", messages);
-        this.setState({messages: messages});
+        console.log("newMessage", newMessage);
+        console.log("newMessageColor: ", newMessage.color);
+        console.log("newMessageType: ", newMessage.type);
+        switch(newMessage.type) {
+          case "incomingCounter":
+            this.setState({connectionsCount: newMessage.count});
+            break;
+          // case "incomingColor":
+          //   console.log("1", this.state.clientColor);
+          //   this.setState({clientColor: newMessage.color});
+          //   console.log("2", this.state.clientColor);
+          //   break;
+          default:
+            const messages = this.state.messages.concat(newMessage);
+            this.setState({messages: messages});
+        }
+
+        // if (newMessage.type === "incomingCounter") {
+        //   // this.connectionsCount = newMessage.count;
+        //   console.log("this connection count: ", this.connectionsCount);
+        //   this.setState({connectionsCount: newMessage.count, clientColor: newMessage.color});
+        //   console.log("clientColor: ", this.state.clientColor);
+        // } else {
+        //   const messages = this.state.messages.concat(newMessage);
+        //   this.setState({messages: messages});
+        // }
 
       };
     }
   }
 
   render() {
-    console.log("Rendering <App />");
+    // console.log("Rendering <App />");
     return (
       <div>
-        <nav className="navbar">
-          <a href="/" className="navbar-brand">Chatty</a>
-        </nav>
-        {console.log("Rendering <MessageList/>")}
+        <Nav counter={this.state.connectionsCount}/>
         <MessageList messages={this.state.messages}/>
-        {console.log("Rendering <ChatBar/>")}
         <ChatBar username={this.state.currentUser.name} changeUsername={this.handleChangeUsername} addNewMessage={this.handleAddNewMessage}/>
       </div>
     );
   }
+        // {console.log("Rendering <MessageList/>")}
+        // {console.log("Rendering <ChatBar/>")}
+
 }
 
 export default App;
