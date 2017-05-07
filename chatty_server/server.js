@@ -1,5 +1,7 @@
 const SocketServer = require('ws');
 const uuidV4 = require('uuid/v4');
+const querystring = require('querystring');
+const fetch = require('node-fetch');
 
 // Set the port to 3001
 const PORT = 3001;
@@ -52,10 +54,19 @@ const clientCounter = () => {
 }
 
 
-function handleMessage(message_data) {
-  console.log(`Received: ${message_data}`)
-  var message = JSON.parse(message_data);
-  message.id = uuid.v4();
+// handle incoming messages, assign message types and check for giphy/image content
+const handleMessages = (message) => {
+
+  switch(message.type) {
+      case "postMessage":
+        message.type = "incomingMessage";
+        break;
+      case "postNotification":
+        message.type = "incomingNotification";
+        break;
+      default:
+        console.log("ERROR: Message type unknown");
+  }
 
   if (matches = message.content.match(/^\/giphy (.+)$/)) {
     let qs = querystring.stringify({
@@ -63,16 +74,18 @@ function handleMessage(message_data) {
       tag: matches[1]
     });
     fetch(`https://api.giphy.com/v1/gifs/random?${qs}`)
-      .then( resp => {return resp.json() } )
-      .then( json => {
-        message.content = `<img src="${json.data.image_url}" alt=""/>`
-        return message;
-      })
+    .then( resp => {return resp.json() } )
+    .then( json => {
+      message.content = `<img src="${json.data.image_url}" alt=""/>`;
+      broadcast(message);
+    })
+  } else if (matches = message.content.match(/(.+)(.jpg|.gif|.png)/)) {
+      message.content = `<img src="${message.content}" alt=""/>`;
+    broadcast(message);
   } else {
-    return message;
+    broadcast(message);
   }
 }
-
 
 
 wss.on("connection", function connection(ws) {
@@ -113,21 +126,7 @@ wss.on("connection", function connection(ws) {
     message.id = uuidV4();
     message.color = ws.color;
 
-
-    let messageToSend = handleMessage(message);
-
-    switch(messageToSend.type) {
-      case "postMessage":
-        messageToSend.type = "incomingMessage";
-        break;
-      case "postNotification":
-        messageToSend.type = "incomingNotification";
-        break;
-      default:
-        console.log("ERROR: Message type unknown");
-    }
-
-    broadcast(messageToSend);
+    handleMessages(message);
   });
 
 

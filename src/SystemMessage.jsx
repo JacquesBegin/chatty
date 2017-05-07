@@ -11,7 +11,4 @@ class SystemMessage extends Component {
   }
 }
 
-
-
-
 export default SystemMessage;

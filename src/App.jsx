@@ -5,10 +5,11 @@ import Nav from "./Nav.jsx";
 
 
 const appData = {
-    currentUser: {name: "Jacques"}, // optional. if currentUser is not defined, it means the user is Anonymous
+    currentUser: {name: "Anonymous"}, // optional. if currentUser is not defined, it means the user is Anonymous
   }
 
 class App extends Component {
+
 
   constructor(props) {
     super(props);
@@ -20,12 +21,14 @@ class App extends Component {
     this.socket = new WebSocket('ws://localhost:3001/');
   }
 
+
   handleAddNewMessage = (message) => {
     message.username = this.state.currentUser.name;
     message.type = "postMessage";
     const newMessages = this.state.messages.concat(message);
     this.socket.send(JSON.stringify(message));
   }
+
 
   handleChangeUsername = (username) => {
     let message = {};
@@ -44,50 +47,30 @@ class App extends Component {
 
       this.socket.onmessage = (rawMessage) => {
         let newMessage = JSON.parse(rawMessage.data);
-        console.log("newMessage", newMessage);
-        console.log("newMessageColor: ", newMessage.color);
-        console.log("newMessageType: ", newMessage.type);
         switch(newMessage.type) {
           case "incomingCounter":
             this.setState({connectionsCount: newMessage.count});
             break;
-          // case "incomingColor":
-          //   console.log("1", this.state.clientColor);
-          //   this.setState({clientColor: newMessage.color});
-          //   console.log("2", this.state.clientColor);
-          //   break;
           default:
             const messages = this.state.messages.concat(newMessage);
             this.setState({messages: messages});
         }
-
-        // if (newMessage.type === "incomingCounter") {
-        //   // this.connectionsCount = newMessage.count;
-        //   console.log("this connection count: ", this.connectionsCount);
-        //   this.setState({connectionsCount: newMessage.count, clientColor: newMessage.color});
-        //   console.log("clientColor: ", this.state.clientColor);
-        // } else {
-        //   const messages = this.state.messages.concat(newMessage);
-        //   this.setState({messages: messages});
-        // }
-
       };
     }
   }
 
   render() {
-    // console.log("Rendering <App />");
+    console.log("Rendering <App />");
     return (
       <div>
         <Nav counter={this.state.connectionsCount}/>
+        {console.log("Rendering <MessageList/>")}
         <MessageList messages={this.state.messages}/>
+        {console.log("Rendering <ChatBar/>")}
         <ChatBar username={this.state.currentUser.name} changeUsername={this.handleChangeUsername} addNewMessage={this.handleAddNewMessage}/>
       </div>
     );
   }
-        // {console.log("Rendering <MessageList/>")}
-        // {console.log("Rendering <ChatBar/>")}
-
 }
 
 export default App;

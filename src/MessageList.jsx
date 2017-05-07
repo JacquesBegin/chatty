@@ -10,7 +10,6 @@ class MessageList extends Component {
 
   }
 
-
   render() {
 
     var outputMessages;
@@ -33,10 +32,10 @@ class MessageList extends Component {
     }
     return (
         <main className="messages">
+          {console.log("Rendering <Message/>")}
           {outputMessages}
         </main>
     );
-          // {console.log("Rendering <Message/>")}
   }
 }
 
